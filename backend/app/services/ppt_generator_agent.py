@@ -6,6 +6,7 @@ from typing import Dict, List
 from pptx import Presentation
 from pathlib import Path
 import json
+from datetime import datetime
 
 from .llm import model
 
@@ -14,6 +15,13 @@ class PPTState(TypedDict):
     outline: dict
     slides: List[dict]
     file_path: str
+    file_name: str
+
+def fileName_generator(title: str) -> str:
+    now = datetime.now().strftime("%Y%m%d_%H%M%S")
+    file_name = title.replace(" ", "_").lower() + str(now)
+
+    return file_name
 
 
 def planner_agent(state: PPTState):
@@ -150,25 +158,28 @@ def builder_agent(state: PPTState):
             p.level = 2
 
     
-    # Path
+    # File Name
+    fileName = fileName_generator(ppt_title)
 
+    # Path
     BASE_DIR = Path(__file__).resolve().parent
     ROOT_DIR = BASE_DIR.parent
-    print("Base Dir: ", BASE_DIR)
-    print("Root Dir: ", ROOT_DIR.parent)
+    # print("Base Dir: ", BASE_DIR)
+    # print("Root Dir: ", ROOT_DIR.parent)
 
     OUTPUT_DIR = ROOT_DIR.parent / "static/ppt_files"
     OUTPUT_DIR.mkdir(exist_ok=True)
 
-    file_path =  OUTPUT_DIR / "my_ppt.pptx"
+    file_path =  OUTPUT_DIR / f"{fileName}.pptx"
 
-    print("Output Dir: ", OUTPUT_DIR)
-    print("File Path: ", file_path)
+    # print("Output Dir: ", OUTPUT_DIR)
+    # print("File Path: ", file_path)
 
     prs.save(str(file_path))
 
     return {
-        "file_path": file_path
+        "file_path": file_path,
+        "file_name": fileName
     }
 
 
